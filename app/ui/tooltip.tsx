@@ -110,13 +110,12 @@ export default function Tooltip({
           </TooltipPrimitive.Trigger>
           <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content
-              sideOffset={4}
+              sideOffset={8}
               side="top"
-              className="z-40 hidden animate-slide-up-fade items-center overflow-hidden rounded-md border border-gray-200 bg-white drop-shadow-lg sm:block"
+              className="z-50 hidden animate-slide-up-fade items-center overflow-hidden rounded-md border border-gray-100 bg-white shadow-md sm:block"
             >
-              <TooltipPrimitive.Arrow className="fill-current text-white" />
               {typeof content === "string" ? (
-                <div className="p-4">
+                <div className="px-4 py-2">
                   <span className="block max-w-xs text-center text-sm text-gray-700">
                     {content}
                   </span>
@@ -124,7 +123,6 @@ export default function Tooltip({
               ) : (
                 content
               )}
-              <TooltipPrimitive.Arrow className="fill-current text-white" />
             </TooltipPrimitive.Content>
           </TooltipPrimitive.Portal>
         </TooltipPrimitive.Root>
@@ -163,26 +161,6 @@ export function TooltipContent({
             {cta}
           </button>
         ) : null)}
-    </div>
-  );
-}
-
-export function OGImageProxy() {
-  return (
-    <div className="flex max-w-md flex-col items-center space-y-5 p-4 text-center">
-      <BlurImage
-        alt="Demo GIF for OG Image Proxy"
-        src="https://res.cloudinary.com/dubdotsh/image/upload/v1664425639/og-image-proxy-demo.gif"
-        width={1200}
-        height={1084}
-        className="w-full overflow-hidden rounded-md shadow-md"
-      />
-      <p className="text-sm text-gray-700">
-        Password protection, link expiration, device targeting, custom social
-        media cards, etc. Add a custom OG image in front of your target URL.
-        Bots like Twitter/Facebook will be served this image, while users will
-        be redirected to your target URL.
-      </p>
     </div>
   );
 }

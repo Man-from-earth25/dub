@@ -3,20 +3,18 @@ import Background from "#/ui/home/background";
 import Intro from "@/components/app/welcome/intro";
 import Interim from "@/components/app/welcome/interim";
 import { AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAddProjectModal } from "@/components/app/modals/add-project-modal";
 import { useAddEditLinkModal } from "@/components/app/modals/add-edit-link-modal";
 import Meta from "@/components/layout/meta";
 import va from "@vercel/analytics";
 import { ArrowLeft } from "lucide-react";
+import { useUpgradePlanModal } from "@/components/app/modals/upgrade-plan-modal";
 
 export default function Welcome() {
-  const { setShowAddProjectModal, AddProjectModal } = useAddProjectModal({
-    closeWithX: true,
-  });
-  const { setShowAddEditLinkModal, AddEditLinkModal } = useAddEditLinkModal({
-    welcomeFlow: true,
-  });
+  const { setShowAddProjectModal, AddProjectModal } = useAddProjectModal();
+  const { setShowAddEditLinkModal, AddEditLinkModal } = useAddEditLinkModal();
+  const { setShowUpgradePlanModal, UpgradePlanModal } = useUpgradePlanModal();
 
   const router = useRouter();
 
@@ -39,6 +37,13 @@ export default function Welcome() {
     } else {
       setShowAddEditLinkModal(false);
     }
+    if (router.query.type === "upgrade") {
+      setTimeout(() => {
+        setShowUpgradePlanModal(true);
+      }, 200);
+    } else {
+      setShowUpgradePlanModal(false);
+    }
   }, [router.query.type]);
 
   return (
@@ -47,6 +52,7 @@ export default function Welcome() {
       <Background />
       <AddProjectModal />
       <AddEditLinkModal />
+      <UpgradePlanModal />
       <AnimatePresence mode="wait">
         {router.query.type ? (
           <button

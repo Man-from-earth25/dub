@@ -1,11 +1,6 @@
 import { useContext, useMemo, useState } from "react";
-import {
-  Calendar,
-  ChevronDown,
-  Copy,
-  Share,
-  Tick,
-} from "@/components/shared/icons";
+import { Copy, Tick } from "@/components/shared/icons";
+import { Calendar, ChevronDown, Share2, Lock } from "lucide-react";
 import { ExpandingArrow } from "#/ui/icons";
 import { INTERVALS } from "#/lib/stats";
 import { linkConstructor } from "#/lib/utils";
@@ -21,7 +16,7 @@ import useScroll from "#/lib/hooks/use-scroll";
 import Tooltip, { TooltipContent } from "../tooltip";
 import useProject from "#/lib/hooks/use-project";
 import { useParams } from "next/navigation";
-import { Lock } from "lucide-react";
+import { APP_DOMAIN } from "#/lib/constants";
 
 export default function Toggle() {
   const { slug: projectSlug } = useParams() as { slug?: string };
@@ -62,9 +57,8 @@ export default function Toggle() {
           )}
           <Popover
             content={
-              <div className="w-full p-2 md:w-48">
+              <div className="grid w-full p-2 md:w-48">
                 {INTERVALS.map(({ display, slug }) =>
-                  !(domain === "dub.sh" && key === "github") &&
                   (slug === "all" || slug === "90d") &&
                   (!plan || plan === "free") ? (
                     <Tooltip
@@ -79,7 +73,7 @@ export default function Toggle() {
                           cta={
                             projectSlug ? "Upgrade to Pro" : "Create Project"
                           }
-                          href="https://app.dub.sh"
+                          href={APP_DOMAIN}
                         />
                       }
                     >
@@ -235,7 +229,7 @@ const SharePopover = () => {
         onClick={() => setopenSharePopoverPopover(!openSharePopover)}
         className="mr-2 flex w-24 items-center justify-center space-x-2 rounded-md bg-white px-3 py-2.5 shadow transition-all duration-75 hover:shadow-md active:scale-95"
       >
-        <IconMenu text="Share" icon={<Share className="h-4 w-4" />} />
+        <IconMenu text="Share" icon={<Share2 className="h-4 w-4" />} />
       </button>
     </Popover>
   );

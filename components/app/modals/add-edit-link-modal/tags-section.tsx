@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Check, Tag, X } from "lucide-react";
+import { Check, ChevronDown, Tag, X } from "lucide-react";
 import { Command, useCommandState } from "cmdk";
 import TagBadge from "../../links/tag-badge";
 import { LinkProps } from "#/lib/types";
@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { LoadingCircle } from "#/ui/icons";
-import { ChevronDown } from "@/components/shared/icons";
+import Tooltip from "#/ui/tooltip";
 
 export default function TagsSection({
   data,
@@ -98,7 +98,7 @@ export default function TagsSection({
             setOpenCommandList(true);
           }
         }}
-        className="block w-full rounded-md border-none px-0 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
+        className="block w-full rounded-md border-none px-0 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 sm:text-sm"
       />
     );
   };
@@ -108,7 +108,13 @@ export default function TagsSection({
       <Command ref={commandRef} className="relative" loop>
         <div className="group mt-1 rounded-md border border-gray-300 bg-white px-1 focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
           <div className="absolute inset-y-0 left-0 flex items-center justify-center pl-3 text-gray-400">
-            {creatingTag ? <LoadingCircle /> : <Tag className="h-4 w-4" />}
+            {creatingTag ? (
+              <LoadingCircle />
+            ) : (
+              <Tooltip content="Tags are used to organize your links in your Dub dashboard. You can edit and customize your tags under the Tags filter section on the left sidebar.">
+                <Tag className="h-4 w-4" />
+              </Tooltip>
+            )}
           </div>
           <div className="flex h-9 px-8">
             {selectedTag ? (

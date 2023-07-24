@@ -8,8 +8,10 @@ import {
 } from "react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import BlurImage from "#/ui/blur-image";
-import { ChevronRight, Clipboard, Logo } from "@/components/shared/icons";
-import Modal from "@/components/shared/modal";
+import { Logo } from "#/ui/icons";
+import { Clipboard, Download, Photo } from "@/components/shared/icons";
+import { ChevronRight } from "lucide-react";
+import Modal from "#/ui/modal";
 import Switch from "#/ui/switch";
 import Tooltip, { TooltipContent } from "#/ui/tooltip";
 import { QRCodeSVG, getQRAsCanvas, getQRAsSVGDataUri } from "#/lib/qr";
@@ -17,7 +19,6 @@ import useProject from "#/lib/swr/use-project";
 import { SimpleLinkProps } from "#/lib/types";
 import { getApexDomain, linkConstructor } from "#/lib/utils";
 import IconMenu from "@/components/shared/icon-menu";
-import { Download, Photo } from "@/components/shared/icons";
 import Popover from "@/components/shared/popover";
 import { toast } from "sonner";
 import { GOOGLE_FAVICON_URL } from "#/lib/constants";
@@ -102,7 +103,7 @@ function LinkQRModalHelper({
 
   return (
     <Modal showModal={showLinkQRModal} setShowModal={setShowLinkQRModal}>
-      <div className="inline-block w-full transform bg-white align-middle shadow-xl transition-all sm:max-w-md sm:rounded-2xl sm:border sm:border-gray-200">
+      <div className="inline-block w-full transform bg-white align-middle shadow-xl transition-all sm:rounded-2xl sm:border sm:border-gray-200">
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-gray-200 px-4 py-4 pt-8 sm:px-16">
           {avatarUrl ? (
             <BlurImage
@@ -113,7 +114,7 @@ function LinkQRModalHelper({
               height={40}
             />
           ) : (
-            <Logo className="h-10 w-10" />
+            <Logo />
           )}
           <h3 className="text-lg font-medium">Download QR Code</h3>
         </div>
@@ -284,7 +285,7 @@ function AdvancedSettings({ qrData, setFgColor, showLogo, setShowLogo }) {
                 onChange={(color) => setFgColor(color)}
                 prefixed
                 style={{ borderColor: qrData.fgColor }}
-                className={`block w-full rounded-r-md border-2 border-l-0 pl-3 text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-black sm:text-sm`}
+                className="block w-full rounded-r-md border-2 border-l-0 pl-3 text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-black sm:text-sm"
               />
             </div>
           </div>

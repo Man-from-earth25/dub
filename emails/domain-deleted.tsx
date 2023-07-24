@@ -13,14 +13,15 @@ import {
   Text,
 } from "@react-email/components";
 import { DUB_LOGO } from "../lib/constants";
+import Footer from "./components/footer";
 
 export default function DomainDeleted({
+  email = "panic@thedis.co",
   domain = "dub.sh",
-  projectName = "Dub",
   projectSlug = "dub",
 }: {
+  email: string;
   domain: string;
-  projectName: string;
   projectSlug: string;
 }) {
   return (
@@ -70,14 +71,7 @@ export default function DomainDeleted({
               If you did not want to keep using this domain on Dub anyway, you
               can simply ignore this email.
             </Text>
-            <Hr className="mx-0 my-6 w-full border border-gray-200" />
-            <Text className="text-[12px] leading-6 text-gray-500">
-              This email was intended for members of the{" "}
-              <span className="text-black">{projectName}</span> project on
-              Dub.If you were not expecting this email, you can ignore this
-              email. If you are concerned about your account's safety, please
-              reply to this email to get in touch with us.
-            </Text>
+            <Footer email={email} />
           </Container>
         </Body>
       </Tailwind>

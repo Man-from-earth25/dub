@@ -12,6 +12,8 @@ import { LoadingCircle } from "#/ui/icons";
 import { LinkProps } from "#/lib/types";
 import Switch from "#/ui/switch";
 import { FADE_IN_ANIMATION_SETTINGS } from "#/lib/constants";
+import Tooltip from "#/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 export default function OGSection({
   props,
@@ -26,16 +28,18 @@ export default function OGSection({
 }) {
   const { title, description, image, proxy } = data;
 
-  const [fileSizeTooBig, setFileSizeTooBig] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
   const onChangePicture = useCallback(
     (e) => {
-      setFileSizeTooBig(false);
+      setFileError(null);
       const file = e.target.files[0];
       if (file) {
-        if (file.size / 1024 / 1024 > 1) {
-          setFileSizeTooBig(true);
+        if (file.size / 1024 / 1024 > 5) {
+          setFileError("File size too big (max 5MB)");
+        } else if (file.type !== "image/png" && file.type !== "image/jpeg") {
+          setFileError("File type not supported (.png or .jpg only)");
         } else {
           const reader = new FileReader();
           reader.onload = (e) => {
@@ -65,9 +69,14 @@ export default function OGSection({
   return (
     <div className="grid gap-5 border-b border-gray-200 pb-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-gray-900">
-          Custom Social Media Cards
-        </h2>
+        <div className="flex items-center justify-between space-x-2">
+          <h2 className="text-sm font-medium text-gray-900">
+            Custom Social Media Cards
+          </h2>
+          <Tooltip content="Customize the title, description, and thumbnail image that will be shown when you share this link on social media.">
+            <HelpCircle className="h-4 w-4 text-gray-600" />
+          </Tooltip>
+        </div>
         <Switch
           fn={() => setData((prev) => ({ ...prev, proxy: !proxy }))}
           checked={proxy}
@@ -83,11 +92,7 @@ export default function OGSection({
           <div>
             <div className="flex items-center justify-between">
               <p className="block text-sm font-medium text-gray-700">Image</p>
-              {fileSizeTooBig && (
-                <p className="text-sm text-red-500">
-                  File size too big (max 1MB)
-                </p>
-              )}
+              {fileError && <p className="text-sm text-red-500">{fileError}</p>}
             </div>
             <label
               htmlFor={`image-${randomIdx}`}
@@ -119,11 +124,18 @@ export default function OGSection({
                   e.preventDefault();
                   e.stopPropagation();
                   setDragActive(false);
-                  setFileSizeTooBig(false);
+                  setFileError(null);
                   const file = e.dataTransfer.files && e.dataTransfer.files[0];
                   if (file) {
                     if (file.size / 1024 / 1024 > 5) {
-                      setFileSizeTooBig(true);
+                      setFileError("File size too big (max 5MB)");
+                    } else if (
+                      file.type !== "image/png" &&
+                      file.type !== "image/jpeg"
+                    ) {
+                      setFileError(
+                        "File type not supported (.png or .jpg only)",
+                      );
                     } else {
                       const reader = new FileReader();
                       reader.onload = (e) => {
@@ -197,7 +209,7 @@ export default function OGSection({
                 id={`title-${randomIdx}`}
                 minRows={3}
                 maxLength={120}
-                className="block w-full rounded-md border-gray-300 pr-10 text-sm text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:outline-none focus:ring-gray-500"
+                className="block w-full rounded-md border-gray-300 pr-10 text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:outline-none focus:ring-gray-500 sm:text-sm"
                 placeholder="Dub - Open Source Bitly Alternative"
                 value={title || ""}
                 onChange={(e) => {
@@ -228,7 +240,7 @@ export default function OGSection({
                 id={`description-${randomIdx}`}
                 minRows={3}
                 maxLength={240}
-                className="block w-full rounded-md border-gray-300 pr-10 text-sm text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:outline-none focus:ring-gray-500"
+                className="block w-full rounded-md border-gray-300 pr-10 text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:outline-none focus:ring-gray-500 sm:text-sm"
                 placeholder="Dub is open-source link management tool for modern marketing teams to create, share, and track short links."
                 value={description || ""}
                 onChange={(e) => {

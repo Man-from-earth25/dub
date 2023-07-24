@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import BlurImage from "#/ui/blur-image";
-import { Logo } from "@/components/shared/icons";
+import { Logo } from "#/ui/icons";
 import { STAGGER_CHILD_VARIANTS } from "#/lib/constants";
 
 export default function Interim() {
@@ -52,7 +52,7 @@ export default function Interim() {
       </motion.p>
       <motion.div
         variants={STAGGER_CHILD_VARIANTS}
-        className="grid w-full grid-cols-1 divide-y divide-gray-100 rounded-md border border-gray-200 bg-white md:grid-cols-2 md:divide-x"
+        className="grid w-full grid-cols-1 divide-y divide-gray-100 overflow-hidden rounded-md border border-gray-200 bg-white md:grid-cols-2 md:divide-x"
       >
         <button
           onClick={() =>

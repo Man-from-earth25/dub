@@ -1,12 +1,7 @@
 import { useRouter } from "next/router";
 import { useContext, useMemo, useState } from "react";
-import {
-  Calendar,
-  ChevronDown,
-  Copy,
-  Share,
-  Tick,
-} from "@/components/shared/icons";
+import { Copy, Tick } from "@/components/shared/icons";
+import { Calendar, Share2, ChevronDown, Lock } from "lucide-react";
 import { ExpandingArrow } from "#/ui/icons";
 import { INTERVALS } from "#/lib/stats";
 import useScroll from "#/lib/hooks/use-scroll";
@@ -21,14 +16,14 @@ import { StatsContext } from ".";
 import useProject from "#/lib/swr/use-project";
 import Tooltip, { TooltipContent } from "#/ui/tooltip";
 import { ModalContext } from "#/ui/modal-provider";
-import { Lock } from "lucide-react";
 
 export default function Toggle({ atModalTop }: { atModalTop?: boolean }) {
   const router = useRouter();
   const { slug: projectSlug } = router.query as { slug?: string };
 
   const { basePath, domain, interval, key } = useContext(StatsContext);
-  const { setShowAddProjectModal } = useContext(ModalContext);
+  const { setShowAddProjectModal, setShowUpgradePlanModal } =
+    useContext(ModalContext);
 
   const atTop = useScroll(80) || atModalTop;
   const [openDatePopover, setOpenDatePopover] = useState(false);
@@ -61,7 +56,7 @@ export default function Toggle({ atModalTop }: { atModalTop?: boolean }) {
           )}
           <Popover
             content={
-              <div className="w-full p-2 md:w-48">
+              <div className="grid w-full p-2 md:w-48">
                 {INTERVALS.map(({ display, slug }) =>
                   (slug === "all" || slug === "90d") &&
                   (!plan || plan === "free") ? (
@@ -77,14 +72,14 @@ export default function Toggle({ atModalTop }: { atModalTop?: boolean }) {
                           cta={
                             projectSlug ? "Upgrade to Pro" : "Create Project"
                           }
-                          {...(projectSlug
-                            ? { href: `/${projectSlug}/settings/billing` }
-                            : {
-                                onClick: () => {
-                                  setShowAddProjectModal(true);
-                                  setOpenDatePopover(false);
-                                },
-                              })}
+                          onClick={() => {
+                            setOpenDatePopover(false);
+                            if (projectSlug) {
+                              setShowUpgradePlanModal(true);
+                            } else {
+                              setShowAddProjectModal(true);
+                            }
+                          }}
                         />
                       }
                     >
@@ -255,7 +250,7 @@ const SharePopover = () => {
         onClick={() => setopenSharePopoverPopover(!openSharePopover)}
         className="mr-2 flex w-24 items-center justify-center space-x-2 rounded-md bg-white px-3 py-2.5 shadow transition-all duration-75 hover:shadow-md active:scale-95"
       >
-        <IconMenu text="Share" icon={<Share className="h-4 w-4" />} />
+        <IconMenu text="Share" icon={<Share2 className="h-4 w-4" />} />
       </button>
     </Popover>
   );

@@ -3,6 +3,8 @@ import { LinkProps } from "#/lib/types";
 import Switch from "#/ui/switch";
 import { motion } from "framer-motion";
 import { FADE_IN_ANIMATION_SETTINGS } from "#/lib/constants";
+import Tooltip from "#/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 export default function IOSSection({
   props,
@@ -31,7 +33,12 @@ export default function IOSSection({
   return (
     <div className="border-b border-gray-200 pb-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-gray-900">iOS Targeting</h2>
+        <div className="flex items-center justify-between space-x-2">
+          <h2 className="text-sm font-medium text-gray-900">iOS Targeting</h2>
+          <Tooltip content="Redirect your iOS users to a different link (e.g. App Store link for your app).">
+            <HelpCircle className="h-4 w-4 text-gray-600" />
+          </Tooltip>
+        </div>
         <Switch fn={() => setEnabled(!enabled)} checked={enabled} />
       </div>
       {enabled && (
@@ -48,7 +55,7 @@ export default function IOSSection({
             onChange={(e) => {
               setData({ ...data, ios: e.target.value });
             }}
-            className="block w-full rounded-md border-gray-300 text-sm text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:outline-none focus:ring-gray-500"
+            className="block w-full rounded-md border-gray-300 text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:outline-none focus:ring-gray-500 sm:text-sm"
             aria-invalid="true"
           />
         </motion.div>

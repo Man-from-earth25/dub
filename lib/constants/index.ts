@@ -38,11 +38,25 @@ export const HOME_HOSTNAMES = new Set([
   "localhost:3000",
 ]);
 
+export const HOME_DOMAIN =
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+    ? "https://dub.sh"
+    : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : "http://localhost:3000";
+
 export const APP_HOSTNAMES = new Set([
   "app.dub.sh",
   "app.localhost:3000",
   "preview.dub.sh",
 ]);
+
+export const APP_DOMAIN =
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+    ? "https://app.dub.sh"
+    : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+    ? "https://preview.dub.sh"
+    : "http://app.localhost:3000";
 
 export const DEFAULT_REDIRECTS = {
   home: "https://dub.sh",
@@ -89,9 +103,17 @@ export const SECOND_LEVEL_DOMAINS = new Set([
   "in",
 ]);
 
-export const SPECIAL_APEX_DOMAINS = {
-  "youtu.be": "youtube.com",
-};
+export const SPECIAL_APEX_DOMAINS = new Set([
+  "my.id",
+  "github.io",
+  "vercel.app",
+  "now.sh",
+  "pages.dev",
+  "webflow.io",
+  "netlify.app",
+  "fly.dev",
+  "web.app",
+]);
 
 export const DEFAULT_LINK_PROPS = {
   key: "github",

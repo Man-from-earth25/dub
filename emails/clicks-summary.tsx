@@ -17,8 +17,10 @@ import {
 import { Link2, MousePointerClick } from "lucide-react";
 import { DUB_LOGO } from "../lib/constants";
 import { nFormatter, truncate } from "../lib/utils";
+import Footer from "./components/footer";
 
 export default function ClicksSummary({
+  email = "panic@thedis.co",
   projectName = "Acme",
   projectSlug = "acme",
   totalClicks = 63689,
@@ -46,6 +48,7 @@ export default function ClicksSummary({
     },
   ],
 }: {
+  email: string;
   projectName: string;
   projectSlug: string;
   totalClicks: number;
@@ -133,25 +136,39 @@ export default function ClicksSummary({
                 </Section>
               </>
             )}
-            <Text className="mt-10 text-sm leading-6 text-black">
-              You can view your full stats by clicking the button below.
-            </Text>
-            <Section className="my-8 text-center">
-              <Link
-                className="rounded-full bg-black px-6 py-3 text-center text-[12px] font-semibold text-white no-underline"
-                href={`https://app.dub.sh/${projectSlug}`}
-              >
-                View my stats
-              </Link>
-            </Section>
-            <Hr className="mx-0 my-6 w-full border border-gray-200" />
-            <Text className="text-[12px] leading-6 text-gray-500">
-              This email was intended for members of the{" "}
-              <span className="text-black">{projectName}</span> project on Dub.
-              If you were not expecting this email, you can ignore this email.
-              If you are concerned about your account's safety, please reply to
-              this email to get in touch with us.
-            </Text>
+            {createdLinks === 0 ? (
+              <>
+                <Text className="text-sm leading-6 text-black">
+                  It looks like you haven't created any links in the last 30
+                  days. If there's anything that we can do to help, please reply
+                  to this email to get in touch with us.
+                </Text>
+
+                <Section className="my-8 text-center">
+                  <Link
+                    className="rounded-full bg-black px-6 py-3 text-center text-[12px] font-semibold text-white no-underline"
+                    href={`https://app.dub.sh/${projectSlug}`}
+                  >
+                    Start creating links
+                  </Link>
+                </Section>
+              </>
+            ) : (
+              <>
+                <Text className="mt-10 text-sm leading-6 text-black">
+                  You can view your full stats by clicking the button below.
+                </Text>
+                <Section className="my-8 text-center">
+                  <Link
+                    className="rounded-full bg-black px-6 py-3 text-center text-[12px] font-semibold text-white no-underline"
+                    href={`https://app.dub.sh/${projectSlug}?sort=clicks`}
+                  >
+                    View my stats
+                  </Link>
+                </Section>
+              </>
+            )}
+            <Footer email={email} />
           </Container>
         </Body>
       </Tailwind>

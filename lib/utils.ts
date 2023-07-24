@@ -4,13 +4,14 @@ import { Metadata } from "next";
 import { NextRouter } from "next/router";
 import ms from "ms";
 import { customAlphabet } from "nanoid";
+import slugify from "@sindresorhus/slugify";
 import {
   SPECIAL_APEX_DOMAINS,
   ccTLDs,
   SECOND_LEVEL_DOMAINS,
   HOME_HOSTNAMES,
+  HOME_DOMAIN,
 } from "./constants";
-import { get } from "@vercel/edge-config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,12 +20,14 @@ export function cn(...inputs: ClassValue[]) {
 export function constructMetadata({
   title = "Dub - Link Management for Modern Marketing Teams",
   description = "Dub is an open-source link management tool for modern marketing teams to create, share, and track short links.",
-  image = "https://public.blob.vercel-storage.com/kmKY9FhOzDRAX28c/4aNzmdW-S93Bh3Z3AJMLU90iSwq7SCLuuwIrcB.png",
+  image = "https://dub.sh/_static/thumbnail.png",
+  icons = "/favicon.ico",
 }: {
   title?: string;
   description?: string;
   image?: string;
-}): Metadata {
+  icons?: string;
+} = {}): Metadata {
   return {
     title,
     description,
@@ -44,8 +47,8 @@ export function constructMetadata({
       images: [image],
       creator: "@dubdotsh",
     },
-    icons: "/favicon.ico",
-    metadataBase: new URL("https://dub.sh"),
+    icons,
+    metadataBase: new URL(HOME_DOMAIN),
     themeColor: "#FFF",
   };
 }
@@ -138,11 +141,24 @@ export function linkConstructor({
   return pretty ? link.replace(/^https?:\/\//, "") : link;
 }
 
-export const timeAgo = (timestamp?: Date, timeOnly?: boolean): string => {
-  if (!timestamp) return "never";
-  return `${ms(Date.now() - new Date(timestamp).getTime())}${
-    timeOnly ? "" : " ago"
-  }`;
+export const timeAgo = (timestamp?: Date): string => {
+  if (!timestamp) return "Just now";
+  const diff = Date.now() - new Date(timestamp).getTime();
+  if (diff < 60000) {
+    // less than 1 second
+    return "Just now";
+  } else if (diff > 82800000) {
+    // more than 23 hours – similar to how Twitter displays timestamps
+    return new Date(timestamp).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year:
+        new Date(timestamp).getFullYear() !== new Date().getFullYear()
+          ? "numeric"
+          : undefined,
+    });
+  }
+  return ms(diff);
 };
 
 export const getDateTimeLocal = (timestamp?: Date): string => {
@@ -187,10 +203,7 @@ export const getFirstAndLastDay = (day: number) => {
 };
 
 export const generateDomainFromName = (name: string) => {
-  const normalizedName = name
-    .toLowerCase()
-    .trim()
-    .replace(/[\W_]+/g, "");
+  const normalizedName = slugify(name, { separator: "" });
   if (normalizedName.length < 3) {
     return "";
   }
@@ -231,15 +244,16 @@ export const getApexDomain = (url: string) => {
   } catch (e) {
     return "";
   }
-  // special apex domains (e.g. youtu.be)
-  if (SPECIAL_APEX_DOMAINS[domain]) return SPECIAL_APEX_DOMAINS[domain];
+  if (domain === "youtu.be") return "youtube.com";
 
   const parts = domain.split(".");
   if (parts.length > 2) {
-    // if this is a second-level TLD (e.g. co.uk, .com.ua, .org.tt), we need to return the last 3 parts
     if (
-      SECOND_LEVEL_DOMAINS.has(parts[parts.length - 2]) &&
-      ccTLDs.has(parts[parts.length - 1])
+      // if this is a second-level TLD (e.g. co.uk, .com.ua, .org.tt), we need to return the last 3 parts
+      (SECOND_LEVEL_DOMAINS.has(parts[parts.length - 2]) &&
+        ccTLDs.has(parts[parts.length - 1])) ||
+      // if it's a special subdomain for website builders (e.g. weathergpt.vercel.app/)
+      SPECIAL_APEX_DOMAINS.has(parts.slice(-2).join("."))
     ) {
       return parts.slice(-3).join(".");
     }
@@ -413,6 +427,7 @@ export const log = async ({
   type: "cron" | "links";
   mention?: boolean;
 }) => {
+  if (process.env.NODE_ENV === "development") console.log(message);
   /* Log a message to the console */
   const HOOK = logTypeToEnv[type];
   if (!HOOK) return;
@@ -437,56 +452,4 @@ export const log = async ({
   } catch (e) {
     console.log(`Failed to log to Dub Slack. Error: ${e}`);
   }
-};
-
-export const isBlacklistedDomain = async (domain: string) => {
-  let blacklistedDomains;
-  try {
-    blacklistedDomains = await get("domains");
-  } catch (e) {
-    blacklistedDomains = [];
-  }
-  return new RegExp(blacklistedDomains.join("|")).test(
-    getDomainWithoutWWW(domain) || domain,
-  );
-};
-
-export const isBlacklistedKey = async (key: string) => {
-  let blacklistedKeys;
-  try {
-    blacklistedKeys = await get("keys");
-  } catch (e) {
-    blacklistedKeys = [];
-  }
-  return new RegExp(blacklistedKeys.join("|"), "i").test(key);
-};
-
-export const isWhitelistedEmail = async (email: string) => {
-  let whitelistedEmails;
-  try {
-    whitelistedEmails = await get("whitelist");
-  } catch (e) {
-    whitelistedEmails = [];
-  }
-  return new Set(whitelistedEmails).has(email);
-};
-
-export const isBlacklistedEmail = async (email: string) => {
-  let blacklistedEmails;
-  try {
-    blacklistedEmails = await get("emails");
-  } catch (e) {
-    blacklistedEmails = [];
-  }
-  return new RegExp(blacklistedEmails.join("|"), "i").test(email);
-};
-
-export const isReservedKey = async (key: string) => {
-  let reservedKey;
-  try {
-    reservedKey = await get("reserved");
-  } catch (e) {
-    reservedKey = [];
-  }
-  return new Set(reservedKey).has(key);
 };

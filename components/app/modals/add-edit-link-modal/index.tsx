@@ -4,6 +4,7 @@ import {
   SetStateAction,
   UIEvent,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -12,12 +13,13 @@ import { mutate } from "swr";
 import { useDebounce } from "use-debounce";
 import BlurImage from "#/ui/blur-image";
 import { AlertCircleFill, Lock, Random, X } from "@/components/shared/icons";
-import { LoadingCircle } from "#/ui/icons";
-import Modal from "@/components/shared/modal";
+import { LoadingCircle, Logo } from "#/ui/icons";
+import Modal from "#/ui/modal";
 import Tooltip, { TooltipContent } from "#/ui/tooltip";
 import useProject from "#/lib/swr/use-project";
 import { LinkProps } from "#/lib/types";
 import {
+  cn,
   getApexDomain,
   getQueryString,
   getUrlWithoutUTMParams,
@@ -39,6 +41,7 @@ import { toast } from "sonner";
 import va from "@vercel/analytics";
 import punycode from "punycode/";
 import Button from "#/ui/button";
+import { ModalContext } from "#/ui/modal-provider";
 
 function AddEditLinkModal({
   showAddEditLinkModal,
@@ -46,14 +49,12 @@ function AddEditLinkModal({
   props,
   duplicateProps,
   homepageDemo,
-  welcomeFlow,
 }: {
   showAddEditLinkModal: boolean;
   setShowAddEditLinkModal: Dispatch<SetStateAction<boolean>>;
   props?: LinkProps;
   duplicateProps?: LinkProps;
   homepageDemo?: boolean;
-  welcomeFlow?: boolean;
 }) {
   const router = useRouter();
   const { slug } = router.query as { slug: string };
@@ -181,16 +182,21 @@ function AddEditLinkModal({
   }, [debouncedUrl, password, showAddEditLinkModal, proxy]);
 
   const logo = useMemo(() => {
-    // if the link is password protected, or if it's a new link and there's no URL yet,
-    // return the default Dub logo
-    if (password || (!debouncedUrl && !props)) {
-      return "/_static/logo.png";
-      // otherwise, get the favicon of the URL
-    } else {
-      return `${GOOGLE_FAVICON_URL}${getApexDomain(
-        debouncedUrl || props?.url || "https://dub.sh",
-      )}`;
-    }
+    // if the link is password protected, or if it's a new link and there's no URL yet, return the default Dub logo
+    // otherwise, get the favicon of the URL
+    const url = password || !debouncedUrl ? null : debouncedUrl || props?.url;
+
+    return url ? (
+      <BlurImage
+        src={`${GOOGLE_FAVICON_URL}${getApexDomain(url)}`}
+        alt="Logo"
+        className="h-10 w-10 rounded-full"
+        width={20}
+        height={20}
+      />
+    ) : (
+      <Logo />
+    );
   }, [password, debouncedUrl, props]);
 
   const endpoint = useMemo(() => {
@@ -257,14 +263,18 @@ function AddEditLinkModal({
 
   const [lockKey, setLockKey] = useState(true);
 
+  const welcomeFlow = useMemo(() => {
+    return router.asPath.split("?")[0] === "/welcome";
+  }, [router.asPath]);
+
   return (
     <Modal
       showModal={showAddEditLinkModal}
       setShowModal={setShowAddEditLinkModal}
-      closeWithX={homepageDemo ? false : true}
-      hideBackdrop={welcomeFlow}
+      className="max-w-screen-lg"
+      disableDefaultHide={homepageDemo ? false : true}
     >
-      <div className="relative grid max-h-[min(906px,_90vh)] w-full divide-x divide-gray-100 overflow-auto bg-white shadow-xl transition-all scrollbar-hide md:max-w-screen-lg md:grid-cols-2 md:overflow-hidden md:rounded-2xl md:border md:border-gray-200">
+      <div className="relative grid max-h-[min(906px,_90vh)] w-full divide-x divide-gray-100 overflow-auto scrollbar-hide md:grid-cols-2">
         {!welcomeFlow && !homepageDemo && (
           <button
             onClick={() => setShowAddEditLinkModal(false)}
@@ -279,14 +289,8 @@ function AddEditLinkModal({
           onScroll={handleScroll}
         >
           <div className="z-10 flex flex-col items-center justify-center space-y-3 border-b border-gray-200 bg-white px-4 pb-8 pt-8 transition-all md:sticky md:top-0 md:px-16">
-            <BlurImage
-              src={logo}
-              alt="Logo"
-              className="h-10 w-10 rounded-full"
-              width={20}
-              height={20}
-            />
-            <h3 className="text-lg font-medium">
+            {logo}
+            <h3 className="max-w-sm truncate text-lg font-medium">
               {props
                 ? `Edit ${linkConstructor({
                     key: props.key,
@@ -396,7 +400,7 @@ function AddEditLinkModal({
                       urlError
                         ? "border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
                         : "border-gray-300 text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:ring-gray-500"
-                    } block w-full rounded-md text-sm focus:outline-none`}
+                    } block w-full rounded-md focus:outline-none sm:text-sm`}
                     aria-invalid="true"
                   />
                   {urlError && (
@@ -463,39 +467,40 @@ function AddEditLinkModal({
                       </option>
                     ))}
                   </select>
-                  {props && lockKey ? (
-                    <div className="block w-full cursor-not-allowed select-none rounded-r-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500">
-                      {props.key}
-                    </div>
-                  ) : (
-                    <input
-                      type="text"
-                      name="key"
-                      id={`key-${randomIdx}`}
-                      required
-                      pattern="[\p{L}\p{N}\p{Pd}\/]+"
-                      onInvalid={(e) => {
-                        e.currentTarget.setCustomValidity(
-                          "Only letters, numbers, '-', and '/' are allowed.",
-                        );
-                      }}
-                      autoComplete="off"
-                      className={`${
-                        keyError
-                          ? "border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
-                          : "border-gray-300 text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:ring-gray-500"
-                      } block w-full rounded-r-md pr-10 text-sm focus:outline-none`}
-                      placeholder="github"
-                      value={key}
-                      onChange={(e) => {
-                        setKeyError(null);
-                        e.currentTarget.setCustomValidity("");
-                        setData({ ...data, key: e.target.value });
-                      }}
-                      aria-invalid="true"
-                      aria-describedby="key-error"
-                    />
-                  )}
+                  <input
+                    type="text"
+                    name="key"
+                    id={`key-${randomIdx}`}
+                    required
+                    pattern="[\p{L}\p{N}\p{Pd}\/]+"
+                    onInvalid={(e) => {
+                      e.currentTarget.setCustomValidity(
+                        "Only letters, numbers, '-', and '/' are allowed.",
+                      );
+                    }}
+                    disabled={props && lockKey}
+                    autoComplete="off"
+                    className={cn(
+                      "block w-full rounded-r-md focus:outline-none sm:text-sm",
+                      {
+                        "border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500":
+                          keyError,
+                        "border-gray-300 text-gray-900 placeholder-gray-300 focus:border-gray-500 focus:ring-gray-500":
+                          !keyError,
+                        "cursor-not-allowed border border-gray-300 bg-gray-100 text-gray-500":
+                          props && lockKey,
+                      },
+                    )}
+                    placeholder="github"
+                    value={key}
+                    onChange={(e) => {
+                      setKeyError(null);
+                      e.currentTarget.setCustomValidity("");
+                      setData({ ...data, key: e.target.value });
+                    }}
+                    aria-invalid="true"
+                    aria-describedby="key-error"
+                  />
                   {keyError && (
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                       <AlertCircleFill
@@ -578,6 +583,7 @@ function AddEditLinkButton({
   const { slug } = router.query as { slug?: string };
 
   const { exceededUsage } = useProject();
+  const { setShowUpgradePlanModal } = useContext(ModalContext);
 
   const onKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
@@ -638,7 +644,7 @@ function AddEditLinkButton({
         <TooltipContent
           title="Your project has exceeded its usage limit. We're still collecting data on your existing links, but you need to upgrade to add more links."
           cta="Upgrade to Pro"
-          href={`/${slug}/settings/billing`}
+          onClick={() => setShowUpgradePlanModal(true)}
         />
       }
     >
@@ -666,12 +672,10 @@ export function useAddEditLinkModal({
   props,
   duplicateProps,
   homepageDemo,
-  welcomeFlow,
 }: {
   props?: LinkProps;
   duplicateProps?: LinkProps;
   homepageDemo?: boolean;
-  welcomeFlow?: boolean;
 } = {}) {
   const [showAddEditLinkModal, setShowAddEditLinkModal] = useState(false);
 
@@ -683,7 +687,6 @@ export function useAddEditLinkModal({
         props={props}
         duplicateProps={duplicateProps}
         homepageDemo={homepageDemo}
-        welcomeFlow={welcomeFlow}
       />
     );
   }, [showAddEditLinkModal, setShowAddEditLinkModal]);
